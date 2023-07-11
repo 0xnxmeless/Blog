@@ -6,16 +6,18 @@ generator client {
 }
 
 model User {
-  uuid      String    @unique @default(uuid())
-  username  String    @unique
+  uuid      String      @unique @default(uuid())
+  username  String      @unique
+  avatar    String?
   firstName String?
   lastName  String?
   password  String
   posts     Post[]
+  replies   PostReply[]
   sessions  Session[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  canPost   Boolean   @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now())
+  canPost   Boolean     @default(false)
 
   @@map("users")
 }
@@ -34,6 +36,7 @@ model Post {
   id        Int         @id @default(autoincrement())
   title     String
   content   String
+  thumbnail String?
   poster    User        @relation(fields: [posterId], references: [uuid])
   posterId  String
   likes     Int         @default(0)
@@ -46,11 +49,14 @@ model Post {
 }
 
 model PostReply {
-  id      Int    @id @default(autoincrement())
-  content String
-  poster  String
-  post    Post   @relation(fields: [postId], references: [id])
-  postId  Int
+  id       Int    @id @default(autoincrement())
+  content  String
+  poster   User   @relation(fields: [posterId], references: [uuid])
+  posterId String
+  post     Post   @relation(fields: [postId], references: [id])
+  postId   Int
+
+  postedAt DateTime @default(now())
 
   @@map("post_replies")
 }

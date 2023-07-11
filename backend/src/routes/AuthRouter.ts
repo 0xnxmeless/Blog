@@ -142,7 +142,7 @@ router.post("/login", Optional, async (req: Request, res: Response) => {
             success: false,
             message: "You are already logged in.",
         });
-    
+
     if (!req.body)
         return res.status(400).json({
             success: false,

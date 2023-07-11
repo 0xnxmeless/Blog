@@ -117,8 +117,7 @@ const User = async (req: Request, res: Response, next: NextFunction) => {
 const Optional = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.session;
 
-    if (!token)
-        return next();
+    if (!token) return next();
 
     const session = await prisma.session.findUnique({
         where: {
@@ -126,8 +125,7 @@ const Optional = async (req: Request, res: Response, next: NextFunction) => {
         },
     });
 
-    if (!session)
-        return next();
+    if (!session) return next();
 
     if (new Date(session.expiresAt) < new Date()) {
         await prisma.session.delete({
