@@ -33,7 +33,7 @@ model Session {
 }
 
 model Post {
-  id        Int         @id @default(autoincrement())
+  uuid      String      @unique @default(uuid())
   title     String
   content   String
   thumbnail String?
@@ -53,8 +53,8 @@ model PostReply {
   content  String
   poster   User   @relation(fields: [posterId], references: [uuid])
   posterId String
-  post     Post   @relation(fields: [postId], references: [id])
-  postId   Int
+  post     Post   @relation(fields: [postId], references: [uuid])
+  postId   String
 
   postedAt DateTime @default(now())
 

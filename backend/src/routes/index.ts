@@ -6,7 +6,7 @@ import { StringsOnly } from "../middleware";
 const router = Router();
 
 router.use("/auth", StringsOnly, AuthRouter);
-router.use("/posts", PostsRouter);
+router.use("/posts", StringsOnly, PostsRouter);
 
 router.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404).json({
