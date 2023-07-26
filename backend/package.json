@@ -24,7 +24,7 @@
     },
     "homepage": "https://github.com/0xnxmeless/Blog#readme",
     "dependencies": {
-        "@prisma/client": "^4.16.2",
+        "@prisma/client": "^5.0.0",
         "argon2": "^0.27.1",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",

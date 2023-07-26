@@ -163,6 +163,12 @@ router
         });
     })
     .patch(User, async (req: Request, res: Response) => {
+        if (!req.user.canPost)
+            return res.status(401).json({
+                success: false,
+                message: "You do not have permission to edit posts.",
+            });
+
         if (!req.body)
             return res.status(400).json({
                 success: false,
@@ -211,6 +217,37 @@ router
             success: true,
             message: "Successfully updated post.",
             data: newPost,
+        });
+    })
+    .delete(User, async (req: Request, res: Response) => {
+        const post = await prisma.post.findUnique({
+            where: {
+                uuid: req.params.id,
+            },
+        });
+
+        if (!post)
+            return res.status(400).json({
+                success: false,
+                message: "Could not find that post.",
+            });
+
+        if (post.posterId !== req.user.uuid)
+            return res.status(403).json({
+                success: false,
+                message:
+                    "You do not have permission to delete other users' posts.",
+            });
+
+        await prisma.post.delete({
+            where: {
+                uuid: post.uuid,
+            },
+        });
+
+        return res.json({
+            success: true,
+            message: "Successfully deleted post.",
         });
     });
 
