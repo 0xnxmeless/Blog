@@ -201,4 +201,19 @@ router.post("/login", Optional, async (req: Request, res: Response) => {
     });
 });
 
+router.get("/logout", User, async (req: Request, res: Response) => {
+    await prisma.session.delete({
+        where: {
+            token: req.session.token,
+        },
+    });
+
+    res.clearCookie("session");
+
+    return res.json({
+        success: true,
+        message: "Successfully logged out.",
+    });
+});
+
 export default router;
