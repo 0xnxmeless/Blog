@@ -1,27 +1,36 @@
 import { Router, Request, Response } from "express";
 import prisma from "../db";
 import { StringsOnly, User } from "../middleware";
+import { Post } from "@prisma/client";
 
 const router = Router();
 
 router
     .route("/")
     .get(async (_req: Request, res: Response) => {
-        const posts = await prisma.post.findMany({
-            select: {
-                uuid: true,
-                title: true,
-                poster: {
-                    select: {
-                        uuid: true,
-                        firstName: true,
-                        lastName: true,
-                        username: true,
-                        avatar: true,
+        let posts;
+        try {
+            posts = await prisma.post.findMany({
+                select: {
+                    uuid: true,
+                    title: true,
+                    poster: {
+                        select: {
+                            uuid: true,
+                            firstName: true,
+                            lastName: true,
+                            username: true,
+                            avatar: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         return res.json({
             success: true,
@@ -51,14 +60,22 @@ router
                     "One or more required fields from the request body are missing.",
             });
 
-        const post = await prisma.post.create({
-            data: {
-                title,
-                content,
-                thumbnail: thumbnail ?? null,
-                posterId: req.user.uuid,
-            },
-        });
+        let post;
+        try {
+            post = await prisma.post.create({
+                data: {
+                    title,
+                    content,
+                    thumbnail: thumbnail ?? null,
+                    posterId: req.user.uuid,
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         return res.json({
             success: true,
@@ -70,37 +87,45 @@ router
 router
     .route("/:id")
     .get(async (req: Request, res: Response) => {
-        const post = await prisma.post.findUnique({
-            where: {
-                uuid: req.params.id,
-            },
-            select: {
-                uuid: true,
-                title: true,
-                content: true,
-                poster: {
-                    select: {
-                        avatar: true,
-                        username: true,
-                        firstName: true,
-                        lastName: true,
-                    },
+        let post;
+        try {
+            post = await prisma.post.findUnique({
+                where: {
+                    uuid: req.params.id,
                 },
-                replies: {
-                    select: {
-                        poster: {
-                            select: {
-                                avatar: true,
-                                username: true,
-                                firstName: true,
-                                lastName: true,
-                            },
+                select: {
+                    uuid: true,
+                    title: true,
+                    content: true,
+                    poster: {
+                        select: {
+                            avatar: true,
+                            username: true,
+                            firstName: true,
+                            lastName: true,
                         },
-                        content: true,
+                    },
+                    replies: {
+                        select: {
+                            poster: {
+                                select: {
+                                    avatar: true,
+                                    username: true,
+                                    firstName: true,
+                                    lastName: true,
+                                },
+                            },
+                            content: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         if (!post)
             return res.status(400).json({
@@ -130,11 +155,19 @@ router
                     "One or more required fields from the request body were missing.",
             });
 
-        const post = await prisma.post.findUnique({
-            where: {
-                uuid: req.params.id,
-            },
-        });
+        let post;
+        try {
+            post = await prisma.post.findUnique({
+                where: {
+                    uuid: req.params.id,
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         if (!post)
             return res.status(400).json({
@@ -175,11 +208,19 @@ router
                 message: "No request body provided.",
             });
 
-        const post = await prisma.post.findUnique({
-            where: {
-                uuid: req.params.id,
-            },
-        });
+        let post;
+        try {
+            post = await prisma.post.findUnique({
+                where: {
+                    uuid: req.params.id,
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         if (!post)
             return res.status(400).json({
@@ -201,17 +242,25 @@ router
                 message: "No fields to update were provided.",
             });
 
-        const newPost = await prisma.post.update({
-            where: {
-                uuid: post.uuid,
-            },
-            data: {
-                title: title ?? post.title,
-                content: content ?? post.content,
-                thumbnail: thumbnail ?? post.thumbnail,
-                updatedAt: new Date(),
-            },
-        });
+        let newPost;
+        try {
+            newPost = await prisma.post.update({
+                where: {
+                    uuid: post.uuid,
+                },
+                data: {
+                    title: title ?? post.title,
+                    content: content ?? post.content,
+                    thumbnail: thumbnail ?? post.thumbnail,
+                    updatedAt: new Date(),
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         return res.json({
             success: true,
@@ -220,11 +269,19 @@ router
         });
     })
     .delete(User, async (req: Request, res: Response) => {
-        const post = await prisma.post.findUnique({
-            where: {
-                uuid: req.params.id,
-            },
-        });
+        let post;
+        try {
+            post = await prisma.post.findUnique({
+                where: {
+                    uuid: req.params.id,
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         if (!post)
             return res.status(400).json({
@@ -239,11 +296,18 @@ router
                     "You do not have permission to delete other users' posts.",
             });
 
-        await prisma.post.delete({
-            where: {
-                uuid: post.uuid,
-            },
-        });
+        try {
+            await prisma.post.delete({
+                where: {
+                    uuid: post.uuid,
+                },
+            });
+        } catch (e) {
+            return res.status(500).json({
+                success: false,
+                message: "A server error has occurred.",
+            });
+        }
 
         return res.json({
             success: true,

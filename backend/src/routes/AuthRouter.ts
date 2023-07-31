@@ -114,21 +114,28 @@ router.post("/register", async (req: Request, res: Response) => {
             })
         );
 
-    await prisma.user
-        .create({
-            data: {
-                username,
-                password: hashedPassword.toString(),
-                firstName: firstName ?? null,
-                lastName: lastName ?? null,
-            },
-        })
-        .catch(() =>
-            res.status(500).json({
-                success: false,
-                message: "A server error has occurred.",
+    try {
+        await prisma.user
+            .create({
+                data: {
+                    username,
+                    password: hashedPassword.toString(),
+                    firstName: firstName ?? null,
+                    lastName: lastName ?? null,
+                },
             })
-        );
+            .catch(() =>
+                res.status(500).json({
+                    success: false,
+                    message: "A server error has occurred.",
+                })
+            );
+    } catch (e) {
+        return res.status(500).json({
+            success: false,
+            message: "A server error has occurred.",
+        });
+    }
 
     return res.json({
         success: true,
@@ -158,11 +165,19 @@ router.post("/login", Optional, async (req: Request, res: Response) => {
                 "One or more required fields from the request body are missing.",
         });
 
-    const user = await prisma.user.findUnique({
-        where: {
-            username,
-        },
-    });
+    let user;
+    try {
+        user = await prisma.user.findUnique({
+            where: {
+                username,
+            },
+        });
+    } catch (e) {
+        return res.status(500).json({
+            success: false,
+            message: "A server error has occurred.",
+        });
+    }
 
     if (!user)
         return res.status(400).json({
@@ -202,11 +217,13 @@ router.post("/login", Optional, async (req: Request, res: Response) => {
 });
 
 router.get("/logout", User, async (req: Request, res: Response) => {
-    await prisma.session.delete({
-        where: {
-            token: req.session.token,
-        },
-    });
+    try {
+        await prisma.session.delete({
+            where: {
+                token: req.session.token,
+            },
+        });
+    } catch (ignored) {}
 
     res.clearCookie("session");
 
